@@ -11,7 +11,7 @@ app.use(express.json());
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.un5m5dm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 
@@ -44,10 +44,25 @@ async function run() {
         res.send(result);
     })
 
+    app.post('/productsByIds', async(req, res)=>{
+      const ids = req.body;
+      const idWithObjectId = ids.map(id=> new ObjectId(id))
+      const query = {
+        _id: {
+          $in : idWithObjectId
+        }
+      }
+     const result = await productCollection.find(query).toArray()
+
+      res.send(result)
+    })
+
     app.get('/productsCount', async(req, res)=>{
       const count = await productCollection.estimatedDocumentCount();
       res.send({count})
     })
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
